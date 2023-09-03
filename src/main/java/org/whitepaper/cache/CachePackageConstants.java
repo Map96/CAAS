@@ -16,5 +16,6 @@ public class CachePackageConstants {
     public static final String UNDERSCORE = "_";
     public static final String CORRELATION = "Correlation";
     public static final String RECORD_ID = "recordId";
+    public static final String EV_CACHE_NAME = "evCache";
 
 }
