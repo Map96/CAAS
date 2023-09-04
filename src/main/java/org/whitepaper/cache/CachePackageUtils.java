@@ -3,9 +3,7 @@ package org.whitepaper.cache;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 
-import static org.whitepaper.cache.CachePackageConstants.MONGODB;
-import static org.whitepaper.cache.CachePackageConstants.MONGODB_PORT;
-import static org.whitepaper.cache.CachePackageConstants.MONGODB_HOST;
+import static org.whitepaper.cache.CachePackageConstants.*;
 
 public class CachePackageUtils {
     public static MongoClientSettings getMongoConnectionSettings() {
