@@ -28,17 +28,11 @@ public class CreateAndInsertSamples implements ServletContextListener {
                 for (int j = 0; j < BATCH_SIZE; j++) {
                     _id = objectId == null ? UUID.randomUUID().toString() : objectId;
                     objectId = UUID.randomUUID().toString();
-                    Document document = new Document()
-                            .append(_ID, _id)
-                            .append(RANDOM_STRING, generateRandomString())
-                            .append(RECORD_ID, recordId++)
-                            .append(RANDOM_DATE, new Date())
-                            .append(RANDOM_INT, new Random().nextInt(1000))
-                            .append(OBJECT_ID, objectId);
+                    Document document = new Document().append(_ID, _id).append(RANDOM_STRING, generateRandomString()).append(RECORD_ID, recordId++).append(RANDOM_DATE, new Date()).append(RANDOM_INT, new Random().nextInt(1000)).append(OBJECT_ID, objectId);
                     batchDocuments.add(document);
                 }
                 collection.insertMany(batchDocuments);
-                System.out.println("Inserted batch " + i);
+                System.out.println("Inserted batch " + i++);
             }
         }
     }
