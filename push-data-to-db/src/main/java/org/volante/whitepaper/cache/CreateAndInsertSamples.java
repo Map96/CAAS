@@ -1,31 +1,29 @@
-package org.whitepaper.cache;
+package org.volante.whitepaper.cache;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.IndexOptions;
-import org.bson.Document;
+import com.mongodb.client.*;
+import com.mongodb.client.model.*;
+import org.bson.*;
 
+import javax.servlet.*;
 import java.util.*;
 
-import static org.whitepaper.cache.CachePackageConstants.*;
-import static org.whitepaper.cache.CachePackageUtils.getMongoConnectionSettings;
+import static org.volante.whitepaper.cache.CachePackageConstants.*;
+import static org.volante.whitepaper.cache.CachePackageUtils.*;
 
-public class CreateAndInsertSamples {
+
+public class CreateAndInsertSamples implements ServletContextListener {
 
     static String objectId = null, _id;
-    static int recordId = 1, BATCH_COUNT = 1000, BATCH_SIZE = 10000;
+    static int recordId = 1, BATCH_COUNT = 1000, BATCH_SIZE = 10000, i = 1;
 
-    public static void main(String[] args) {
-        //First Record: "fc0bbb04-596c-42ef-8020-f54437bd4043"
+    public static void pumpDataToDb() {
         try (MongoClient mongoClient = MongoClients.create(getMongoConnectionSettings())) {
             MongoDatabase database = mongoClient.getDatabase(CACHE_DB);
             MongoCollection<Document> collection = database.getCollection(CORRELATION);
 
             createIndex(collection);
 
-            for (int i = 0; i < BATCH_COUNT; i++) {
+            while (true) {
                 List<Document> batchDocuments = new ArrayList<>();
                 for (int j = 0; j < BATCH_SIZE; j++) {
                     _id = objectId == null ? UUID.randomUUID().toString() : objectId;
@@ -63,5 +61,15 @@ public class CreateAndInsertSamples {
             result.append(characters.charAt(random.nextInt(characters.length())));
         }
         return result.toString();
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
+        pumpDataToDb();
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+
     }
 }

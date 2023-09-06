@@ -1,4 +1,4 @@
-package org.whitepaper.cache;
+package org.volante.whitepaper.cache;
 
 public class CachePackageConstants {
     public static final String MONGODB_HOST = "localhost";
