@@ -3,6 +3,8 @@ package org.volante.whitepaper.cache;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import org.bson.*;
+import org.quartz.*;
+import org.quartz.impl.*;
 
 import javax.servlet.*;
 import java.util.*;
@@ -14,26 +16,26 @@ import static org.volante.whitepaper.cache.CachePackageUtils.*;
 public class CreateAndInsertSamples implements ServletContextListener {
 
     static String objectId = null, _id;
-    static int recordId = 1, BATCH_COUNT = 1000, BATCH_SIZE = 10000, i = 1;
+    static int recordId = 1, BATCH_COUNT = 1000, BATCH_SIZE = 10000, i = 1, PAYLOAD_SIZE = 10240;
 
-    public static void pumpDataToDb() {
+    static {
         try (MongoClient mongoClient = MongoClients.create(getMongoConnectionSettings())) {
             MongoDatabase database = mongoClient.getDatabase(CACHE_DB);
             MongoCollection<Document> collection = database.getCollection(CORRELATION);
-
             createIndex(collection);
+        }
+    }
 
-            while (true) {
-                List<Document> batchDocuments = new ArrayList<>();
-                for (int j = 0; j < BATCH_SIZE; j++) {
-                    _id = objectId == null ? UUID.randomUUID().toString() : objectId;
-                    objectId = UUID.randomUUID().toString();
-                    Document document = new Document().append(_ID, _id).append(RANDOM_STRING, generateRandomString()).append(RECORD_ID, recordId++).append(RANDOM_DATE, new Date()).append(RANDOM_INT, new Random().nextInt(1000)).append(OBJECT_ID, objectId);
-                    batchDocuments.add(document);
-                }
-                collection.insertMany(batchDocuments);
-                System.out.println("Inserted batch " + i++);
-            }
+    public static void pumpDataToDb() {
+        try {
+            SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+            Scheduler scheduler = schedulerFactory.getScheduler();
+            scheduler.start();
+            JobDetail jobDetail = JobBuilder.newJob(PushData.class).withIdentity(PUSH_DATA_JOB, PUSH_DATA_GROUP).build();
+            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(PUSH_DATA_TRIGGER, PUSH_DATA_GROUP).startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(SCHEDULE_TIME).repeatForever()).build();
+            scheduler.scheduleJob(jobDetail, trigger);
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -57,6 +59,12 @@ public class CreateAndInsertSamples implements ServletContextListener {
         return result.toString();
     }
 
+    public static String generateRandomPayload(int sizeInBytes) {
+        byte[] payload = new byte[sizeInBytes];
+        new Random().nextBytes(payload);
+        return Base64.getEncoder().encodeToString(payload);
+    }
+
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         pumpDataToDb();
@@ -65,5 +73,20 @@ public class CreateAndInsertSamples implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
 
+    }
+
+    public static class PushData implements Job {
+        @Override
+        public void execute(JobExecutionContext context) {
+            try (MongoClient mongoClient = MongoClients.create(getMongoConnectionSettings())) {
+                MongoDatabase database = mongoClient.getDatabase(CACHE_DB);
+                MongoCollection<Document> collection = database.getCollection(CORRELATION);
+                _id = objectId == null ? UUID.randomUUID().toString() : objectId;
+                objectId = UUID.randomUUID().toString();
+                Document document = new Document().append(_ID, _id).append(RANDOM_STRING, generateRandomString()).append(RECORD_ID, recordId++).append(RANDOM_DATE, new Date()).append(RANDOM_INT, new Random().nextInt(1000)).append(OBJECT_ID, objectId).append(PAYLOAD, generateRandomPayload(PAYLOAD_SIZE));
+                collection.insertOne(document);
+                System.out.println("Inserted Record: " + i++);
+            }
+        }
     }
 }

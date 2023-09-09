@@ -3,8 +3,10 @@ package org.volante.whitepaper.cache;
 public class CachePackageConstants {
     public static final String MONGODB_HOST = "localhost";
     public static final String REDIS_HOST = "localhost";
+    public static final String KAFKA_HOST = "localhost";
     public static final int MONGODB_PORT = 27017;
     public static final int REDIS_PORT = 6379;
+    public static final int KAFKA_PORT = 9092;
     public static final String CACHE_DB = "cacheDb";
     public static final String CHARACTER_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String OBJECT_ID = "objectId";
@@ -18,5 +20,15 @@ public class CachePackageConstants {
     public static final String RECORD_ID = "recordId";
     public static final String MONGODB = "mongodb";
     public static final String DOT = ".";
+    public static final String COLON = ":";
+    public static final String CONSUMER_GROUP = "my-consumer-group";
+    public static final String PAYLOAD = "payload";
+    public static final String PUSH_DATA_JOB = "PushDataJob";
+    public static final String PUSH_DATA_TRIGGER = "PushDataTrigger";
+    public static final String PUSH_DATA_GROUP = "PushDataGroup";
+    public static final String CACHE_DATA_JOB = "CacheDataJob";
+    public static final String CACHE_DATA_TRIGGER = "CacheDataTrigger";
+    public static final String CACHE_DATA_GROUP = "CacheDataGroup";
+    public static final int SCHEDULE_TIME = 1;
 
 }
