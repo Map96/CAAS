@@ -3,6 +3,7 @@ package org.volante.whitepaper.cache;
 import com.github.benmanes.caffeine.cache.*;
 import org.bson.*;
 
+import java.time.*;
 import java.util.*;
 
 import static org.volante.whitepaper.cache.CachePackageConstants.*;
@@ -11,7 +12,7 @@ public class LoadDataInCaffeine {
     static Cache<String, Map<String, Object>> caffeineCache;
 
     static {
-        caffeineCache = Caffeine.newBuilder().build();
+        caffeineCache = Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(TTL)).build();
     }
 
     public static void addDataToCaffeine(Document document) {

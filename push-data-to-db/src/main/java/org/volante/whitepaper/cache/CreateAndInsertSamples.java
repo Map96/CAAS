@@ -16,7 +16,9 @@ import static org.volante.whitepaper.cache.CachePackageUtils.*;
 public class CreateAndInsertSamples implements ServletContextListener {
 
     static String objectId = null, _id;
-    static int recordId = 1, BATCH_COUNT = 1000, BATCH_SIZE = 10000, i = 1, PAYLOAD_SIZE = 10240;
+    static int recordId = 1;
+    static int i = 1;
+    static int PAYLOAD_SIZE = 10240;
 
     static {
         try (MongoClient mongoClient = MongoClients.create(getMongoConnectionSettings())) {

@@ -14,8 +14,6 @@ public class CachePackageConstants {
     public static final String RANDOM_INT = "randomInt";
     public static final String RANDOM_DATE = "randomDate";
     public static final String RANDOM_STRING = "randomString";
-    public static final String COLLECTION = "collection";
-    public static final String UNDERSCORE = "_";
     public static final String CORRELATION = "Correlation";
     public static final String RECORD_ID = "recordId";
     public static final String MONGODB = "mongodb";
@@ -30,5 +28,6 @@ public class CachePackageConstants {
     public static final String CACHE_DATA_TRIGGER = "CacheDataTrigger";
     public static final String CACHE_DATA_GROUP = "CacheDataGroup";
     public static final int SCHEDULE_TIME = 1;
+    static final int TTL = 10;
 
 }

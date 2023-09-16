@@ -31,8 +31,8 @@ public class MongoToRedisCDC implements ServletContextListener {
             SchedulerFactory schedulerFactory = new StdSchedulerFactory();
             Scheduler scheduler = schedulerFactory.getScheduler();
             scheduler.start();
-            JobDetail jobDetail = JobBuilder.newJob(CacheData.class).withIdentity(PUSH_DATA_JOB, PUSH_DATA_GROUP).build();
-            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(PUSH_DATA_TRIGGER, PUSH_DATA_GROUP).startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(SCHEDULE_TIME).repeatForever()).build();
+            JobDetail jobDetail = JobBuilder.newJob(CacheData.class).withIdentity(CACHE_DATA_JOB, CACHE_DATA_GROUP).build();
+            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(CACHE_DATA_TRIGGER, CACHE_DATA_GROUP).startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(SCHEDULE_TIME).repeatForever()).build();
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
