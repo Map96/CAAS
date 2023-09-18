@@ -28,6 +28,8 @@ public class CachePackageConstants {
     public static final String CACHE_DATA_TRIGGER = "CacheDataTrigger";
     public static final String CACHE_DATA_GROUP = "CacheDataGroup";
     public static final int SCHEDULE_TIME = 1;
-    static final int TTL = 10;
-
+    public static final int TTL = 10;
+    public static final int NUM_THREADS = 10;
+    public static final int NUM_QUERIES_PER_THREAD = 10000;
+    public static final boolean isExternalCache = true;
 }

@@ -12,6 +12,7 @@ import java.time.*;
 import java.util.*;
 
 import static org.volante.whitepaper.cache.CachePackageConstants.*;
+import static org.volante.whitepaper.cache.FetchCacheAndProcess.*;
 import static org.volante.whitepaper.cache.LoadDataInCaffeine.*;
 import static org.volante.whitepaper.cache.LoadDataInRedis.*;
 
@@ -52,6 +53,7 @@ public class MongoToRedisCDC implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         startCDC();
+        startCacheOps();
     }
 
     @Override
@@ -68,8 +70,11 @@ public class MongoToRedisCDC implements ServletContextListener {
                     String documentString = JsonParser.parseString(record.value()).getAsJsonObject().get(PAYLOAD).getAsString();
                     Document document = Document.parse(documentString);
                     if (document != null) {
-                        addDataToCaffeine(document);
-                        addDataToRedis(document);
+                        if (isExternalCache) {
+                            addDataToCaffeine(document);
+                        } else {
+                            addDataToRedis(document);
+                        }
                     }
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
