@@ -6,14 +6,13 @@ import org.bson.*;
 import org.quartz.*;
 import org.quartz.impl.*;
 
-import javax.servlet.*;
 import java.util.*;
 
 import static org.volante.whitepaper.cache.CachePackageConstants.*;
 import static org.volante.whitepaper.cache.CachePackageUtils.*;
 
 
-public class CreateAndInsertSamples implements ServletContextListener {
+public class CreateAndInsertSamples {
 
     static String objectId = null, _id;
     static int recordId = 1;
@@ -34,7 +33,7 @@ public class CreateAndInsertSamples implements ServletContextListener {
             Scheduler scheduler = schedulerFactory.getScheduler();
             scheduler.start();
             JobDetail jobDetail = JobBuilder.newJob(PushData.class).withIdentity(PUSH_DATA_JOB, PUSH_DATA_GROUP).build();
-            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(PUSH_DATA_TRIGGER, PUSH_DATA_GROUP).startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(SCHEDULE_TIME).repeatForever()).build();
+            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(PUSH_DATA_TRIGGER, PUSH_DATA_GROUP).startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(SCHEDULE_TIME).repeatForever()).build();
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
@@ -48,7 +47,6 @@ public class CreateAndInsertSamples implements ServletContextListener {
         Document index2 = new Document(RECORD_ID, 1);
         IndexOptions options2 = new IndexOptions().unique(true);
         collection.createIndex(index2, options2);
-        System.out.println("Indexes created successfully.");
     }
 
     private static String generateRandomString() {
@@ -67,16 +65,6 @@ public class CreateAndInsertSamples implements ServletContextListener {
         return Base64.getEncoder().encodeToString(payload);
     }
 
-    @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-        pumpDataToDb();
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent servletContextEvent) {
-
-    }
-
     public static class PushData implements Job {
         @Override
         public void execute(JobExecutionContext context) {
@@ -87,7 +75,6 @@ public class CreateAndInsertSamples implements ServletContextListener {
                 objectId = UUID.randomUUID().toString();
                 Document document = new Document().append(_ID, _id).append(RANDOM_STRING, generateRandomString()).append(RECORD_ID, recordId++).append(RANDOM_DATE, new Date()).append(RANDOM_INT, new Random().nextInt(1000)).append(OBJECT_ID, objectId).append(PAYLOAD, generateRandomPayload(PAYLOAD_SIZE));
                 collection.insertOne(document);
-                System.out.println("Inserted Record: " + i++);
             }
         }
     }

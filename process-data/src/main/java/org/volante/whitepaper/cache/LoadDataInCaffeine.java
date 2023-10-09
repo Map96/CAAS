@@ -16,7 +16,6 @@ public class LoadDataInCaffeine {
     }
 
     public static void addDataToCaffeine(Document document) {
-        System.out.println("Inserting Record in Caffeine: " + document.get(RECORD_ID).toString());
         HashMap<String, String> stringObjectHashMap = new HashMap<>();
         stringObjectHashMap.put(OBJECT_ID, document.get(OBJECT_ID).toString());
         stringObjectHashMap.put(PAYLOAD, document.get(PAYLOAD).toString());

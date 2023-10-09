@@ -6,7 +6,7 @@
     <display-name>Process Data Application</display-name>
 
     <listener>
-        <listener-class>org.volante.whitepaper.cache.MongoToRedisCDC</listener-class>
+        <listener-class>org.volante.whitepaper.cache.PopulateCacheAndProcess</listener-class>
     </listener>
 
 </web-app>

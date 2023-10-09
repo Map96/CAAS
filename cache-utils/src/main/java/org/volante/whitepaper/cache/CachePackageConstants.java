@@ -40,10 +40,10 @@ public class CachePackageConstants {
         MONGODB_PORT = System.getenv("MONGODB_PORT") != null ? Integer.parseInt(System.getenv("MONGODB_PORT")) : 27017;
         REDIS_PORT = System.getenv("REDIS_PORT") != null ? Integer.parseInt(System.getenv("REDIS_PORT")) : 6379;
         KAFKA_PORT = System.getenv("KAFKA_PORT") != null ? Integer.parseInt(System.getenv("KAFKA_PORT")) : 9092;
-        SCHEDULE_TIME = System.getenv("SCHEDULE_TIME") != null ? Integer.parseInt(System.getenv("SCHEDULE_TIME")) : 1;
+        SCHEDULE_TIME = System.getenv("SCHEDULE_TIME") != null ? Integer.parseInt(System.getenv("SCHEDULE_TIME")) : 10;
         TTL = System.getenv("TTL") != null ? Integer.parseInt(System.getenv("TTL")) : 10;
         NUM_THREADS = System.getenv("NUM_THREADS") != null ? Integer.parseInt(System.getenv("NUM_THREADS")) : 10;
-        NUM_QUERIES_PER_THREAD = System.getenv("NUM_QUERIES_PER_THREAD") != null ? Integer.parseInt(System.getenv("NUM_QUERIES_PER_THREAD")) : 10000;
+        NUM_QUERIES_PER_THREAD = System.getenv("NUM_QUERIES_PER_THREAD") != null ? Integer.parseInt(System.getenv("NUM_QUERIES_PER_THREAD")) : 100000;
         isExternalCache = System.getenv("isExternalCache") == null || Boolean.parseBoolean(System.getenv("isExternalCache"));
     }
 }

@@ -11,7 +11,6 @@ public class LoadDataInRedis {
     public static void addDataToRedis(Document document) {
         try (Jedis jedis = new Jedis(REDIS_HOST, REDIS_PORT)) {
             Pipeline pipeline = jedis.pipelined();
-            System.out.println("Inserting Record in Pipeline: " + document.get(RECORD_ID).toString());
             String key = document.get(_ID).toString();
             pipeline.hset(key, OBJECT_ID, document.get(OBJECT_ID).toString());
             pipeline.hset(key, PAYLOAD, document.get(PAYLOAD).toString());

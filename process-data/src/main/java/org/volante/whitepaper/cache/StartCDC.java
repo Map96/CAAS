@@ -7,25 +7,16 @@ import org.bson.*;
 import org.quartz.*;
 import org.quartz.impl.*;
 
-import javax.servlet.*;
 import java.time.*;
 import java.util.*;
 
 import static org.volante.whitepaper.cache.CachePackageConstants.*;
-import static org.volante.whitepaper.cache.FetchCacheAndProcess.*;
 import static org.volante.whitepaper.cache.LoadDataInCaffeine.*;
 import static org.volante.whitepaper.cache.LoadDataInRedis.*;
 
-public class MongoToRedisCDC implements ServletContextListener {
-
+public class StartCDC {
     static final Duration pollingInterval = Duration.ofSeconds(1);
     static Properties consumerProps = getProperties();
-
-    static KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps);
-
-    static {
-        consumer.subscribe(Collections.singletonList(CACHE_DB + DOT + CORRELATION));
-    }
 
     public static void startCDC() {
         try {
@@ -33,7 +24,7 @@ public class MongoToRedisCDC implements ServletContextListener {
             Scheduler scheduler = schedulerFactory.getScheduler();
             scheduler.start();
             JobDetail jobDetail = JobBuilder.newJob(CacheData.class).withIdentity(CACHE_DATA_JOB, CACHE_DATA_GROUP).build();
-            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(CACHE_DATA_TRIGGER, CACHE_DATA_GROUP).startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(SCHEDULE_TIME).repeatForever()).build();
+            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(CACHE_DATA_TRIGGER, CACHE_DATA_GROUP).startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(SCHEDULE_TIME).repeatForever()).build();
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
@@ -50,34 +41,29 @@ public class MongoToRedisCDC implements ServletContextListener {
         return consumerProps;
     }
 
-    @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-        startCDC();
-        startCacheOps();
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent servletContextEvent) {
-
-    }
-
     public static class CacheData implements Job {
         @Override
         public void execute(JobExecutionContext context) {
-            ConsumerRecords<String, String> records = consumer.poll(pollingInterval);
-            for (ConsumerRecord<String, String> record : records) {
-                try {
-                    String documentString = JsonParser.parseString(record.value()).getAsJsonObject().get(PAYLOAD).getAsString();
-                    Document document = Document.parse(documentString);
-                    if (document != null) {
-                        if (isExternalCache) {
-                            addDataToCaffeine(document);
-                        } else {
-                            addDataToRedis(document);
+            ConsumerRecords<String, String> records;
+            try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(consumerProps)) {
+                consumer.subscribe(Collections.singletonList(CACHE_DB + DOT + CORRELATION));
+                records = consumer.poll(pollingInterval);
+                for (ConsumerRecord<String, String> record : records) {
+                    try {
+                        String documentString = JsonParser.parseString(record.value()).getAsJsonObject().get(PAYLOAD).getAsString();
+                        Document document = Document.parse(documentString);
+                        if (document != null) {
+                            if (isExternalCache) {
+                                addDataToRedis(document);
+                            } else {
+                                addDataToCaffeine(document);
+                            }
                         }
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    } finally {
+                        consumer.close();
                     }
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
                 }
             }
         }

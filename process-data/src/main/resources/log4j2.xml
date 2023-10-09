@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <Property name="LOG_PATTERN">[%t][%-5p] [%d{dd MMM yyyy HH:mm:ss:SSS}] %c %x - %m%n</Property>
+    </Properties>
+    <Appenders>
+        <RollingFile name="RollingName" filename="../logs/Thread.log"
+                     filePattern="../logs/Thread-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100000"/>
+        </RollingFile>
+        <RollingFile name="RollingError" filename="../logs/Error.log"
+                     filePattern="../logs/Error-%i.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100000"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.volante.whitepaper.cache" level="info">
+            <AppenderRef ref="RollingName"/>
+        </Logger>
+        <Root level="error">
+            <AppenderRef ref="RollingError"/>
+        </Root>
+    </Loggers>
+</Configuration>
