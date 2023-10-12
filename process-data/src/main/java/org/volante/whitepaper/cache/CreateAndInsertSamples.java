@@ -16,7 +16,6 @@ public class CreateAndInsertSamples {
 
     static String objectId = null, _id;
     static int recordId = 1;
-    static int i = 1;
     static int PAYLOAD_SIZE = 10240;
 
     static {

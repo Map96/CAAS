@@ -3,7 +3,6 @@ package org.volante.whitepaper.cache;
 import org.apache.logging.log4j.*;
 import redis.clients.jedis.*;
 
-import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -43,19 +42,23 @@ public class FetchCacheAndProcess {
             int threadId = i + 1;
             executorService.execute(() -> {
                 if (!allKeysFromCaffeine.isEmpty()) {
-                    String randomKey = getRandomKey(allKeysFromCaffeine);
-                    logger.info("Thread: " + threadId + " Start Key: " + randomKey);
+                    String referenceKey = getRandomKey(allKeysFromCaffeine);
+                    logger.info("Thread: " + threadId + " Start Key: " + referenceKey);
                     for (int j = 0; j < NUM_QUERIES_PER_THREAD; j++) {
-                        logger.info("Thread: " + threadId + " Key: " + randomKey + " TIMESTAMP:CAFFEINE:START: " + new Timestamp(System.currentTimeMillis()));
-                        Map<String, String> document = caffeineCache.getIfPresent(randomKey);
-                        while (document == null) {
-                            logger.info("Thread: " + threadId + " Key: " + randomKey + " CACHE MISS");
-                            document = caffeineCache.getIfPresent(randomKey);
+                        long startTime = System.currentTimeMillis();
+                        Map<String, String> document = caffeineCache.getIfPresent(referenceKey);
+                        if (document == null) {
+                            Set<String> allKeysFromCaffeine1 = getAllKeysFromCaffeine();
+                            referenceKey = getRandomKey(allKeysFromCaffeine1);
+                            logger.info("Thread: " + threadId + " Start Key: " + referenceKey);
+                            continue;
                         }
-                        logger.info("Thread: " + threadId + " Key: " + randomKey + " TIMESTAMP:CAFFEINE:END: " + new Timestamp(System.currentTimeMillis()));
+                        long endTime = System.currentTimeMillis();
+                        long latency = endTime - startTime;
+                        logger.info("Thread: " + threadId + " Key: " + referenceKey + " Caffeine:Latency: " + latency);
                         String objectId = document.get(OBJECT_ID);
-                        logger.info("Thread: " + threadId + " Key: " + randomKey + " ObjectKey: " + objectId);
-                        randomKey = objectId;
+                        logger.info("Thread: " + threadId + " Key: " + referenceKey + " ObjectKey: " + objectId);
+                        referenceKey = objectId;
                     }
                 }
             });
@@ -71,18 +74,23 @@ public class FetchCacheAndProcess {
             int threadId = i + 1;
             executorService.execute(() -> {
                 if (!allKeysFromRedis.isEmpty()) {
-                    String randomKey = getRandomKey(allKeysFromRedis);
-                    logger.info("Thread: " + threadId + " Start Key: " + randomKey);
+                    String referenceKey = getRandomKey(allKeysFromRedis);
+                    logger.info("Thread: " + threadId + " Start Key: " + referenceKey);
                     for (int j = 0; j < NUM_QUERIES_PER_THREAD; j++) {
                         try (Jedis jedis = new Jedis(REDIS_HOST, REDIS_PORT)) {
-                            logger.info("Thread: " + threadId + " Key: " + randomKey + " TIMESTAMP:REDIS:START: " + new Timestamp(System.currentTimeMillis()));
-                            while (!jedis.exists(randomKey)) {
-                                logger.info("Thread: " + threadId + " Key: " + randomKey + " CACHE MISS");
+                            long startTime = System.currentTimeMillis();
+                            if (!jedis.exists(referenceKey)) {
+                                Set<String> allKeysFromRedis1 = getAllKeysFromRedis();
+                                referenceKey = getRandomKey(allKeysFromRedis1);
+                                logger.info("Thread: " + threadId + " Start Key: " + referenceKey);
+                                continue;
                             }
-                            String objectId = jedis.hget(randomKey, OBJECT_ID);
-                            logger.info("Thread: " + threadId + " Key: " + randomKey + " TIMESTAMP:REDIS:END: " + new Timestamp(System.currentTimeMillis()));
-                            logger.info("Thread: " + threadId + " Key: " + randomKey + " ObjectKey: " + objectId);
-                            randomKey = objectId;
+                            String objectId = jedis.hget(referenceKey, OBJECT_ID);
+                            long endTime = System.currentTimeMillis();
+                            long latency = endTime - startTime;
+                            logger.info("Thread: " + threadId + " Key: " + referenceKey + " Redis:Latency: " + latency);
+                            logger.info("Thread: " + threadId + " Key: " + referenceKey + " ObjectKey: " + objectId);
+                            referenceKey = objectId;
                         }
                     }
                 }
